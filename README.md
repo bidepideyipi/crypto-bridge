@@ -19,13 +19,6 @@ Crypto Bridge - Multi-Chain Wallet System
   - Message Queue: RocketMQ
   - Architecture: Layered service design with clear separation of concerns
 
-  Documentation
-
-  - 架构设计
-  - 接口定义
-  - 数据库设计
-  - 测试计划
-
   Development Roadmap
 
   - [x] BTC chain adapter
