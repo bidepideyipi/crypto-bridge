@@ -1,0 +1,295 @@
+# Web3 多链钱包系统配置文件
+# 版本: v0.1.0
+
+# ============================================
+# 服务配置
+# ============================================
+server:
+  host: "0.0.0.0"
+  port: 9000
+  mode: "debug"  # debug, release
+  read_timeout: 5s
+  write_timeout: 5s
+  shutdown_timeout: 10s
+
+# ============================================
+# 数据库配置
+# ============================================
+database:
+  postgres:
+    host: "localhost"
+    port: 5432
+    database: "crypto_bridge"
+    user: "postgres"
+    password: ""  # 请填写数据库密码
+    ssl_mode: "disable"
+    max_open_conns: 20
+    max_idle_conns: 2
+    conn_max_lifetime: 1h
+    conn_max_idle_time: 10m
+
+# ============================================
+# Redis 配置
+# ============================================
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""  # 如有密码请填写
+  database: 0
+  pool_size: 100
+  min_idle_conns: 10
+
+# ============================================
+# RocketMQ 配置
+# ============================================
+rocketmq:
+  name_srv_addr: "127.0.0.1:9876"
+  group_name: "wallet_service"
+  consume_timeout: 5m
+  retry_times: 3
+
+  # Topic 配置
+  topics:
+    deposit_events: "wallet.deposit.events"
+    withdrawal_events: "wallet.withdrawal.events"
+
+# ============================================
+# 区块链节点配置
+# ============================================
+blockchain:
+  # Bitcoin 配置
+  btc:
+    enabled: true
+    network: "mainnet"  # mainnet, testnet
+    rpc_endpoints:
+      - "https://blockstream.info/api"
+      - "https://blockchair.com/api"
+      - "https://mempool.space/api"
+    websocket_endpoint: "wss://blockstream.info/api"
+    timeout: 30s
+    max_retries: 3
+    retry_delay: 1s
+
+  # Ethereum 配置
+  eth:
+    enabled: true
+    network: "mainnet"  # mainnet, testnet
+    rpc_endpoints:
+      - "https://eth.llamarpc.com"
+      - "https://rpc.ankr.com/eth"
+      - "https://ethereum.publicnode.com"
+    websocket_endpoint: "wss://eth.llamarpc.com"
+    timeout: 30s
+    max_retries: 3
+    retry_delay: 1s
+
+  # Tron 配置 (后续版本)
+  tron:
+    enabled: false
+    network: "mainnet"
+    grpc_endpoints:
+      - "grpc.trongrid.io:50051"
+    timeout: 30s
+
+  # Solana 配置 (后续版本)
+  sol:
+    enabled: false
+    network: "mainnet"
+    rpc_endpoints:
+      - "https://api.mainnet-beta.solana.com"
+    websocket_endpoint: "wss://api.mainnet-beta.solana.com"
+    timeout: 30s
+
+# ============================================
+# 冷钱包配置
+# ============================================
+cold_wallet:
+  # 硬件钱包配置
+  hardware_wallet:
+    enabled: false
+    type: "ledger"  # ledger, trezor
+
+  # HSM 配置
+  hsm:
+    enabled: false
+    provider: ""  # cloudhsm, thales, etc.
+    endpoint: ""
+    pin: ""  # HSM PIN
+
+  # Shamir 秘钥分片配置
+  shamir:
+    enabled: false
+    threshold: 3  # 需要的碎片数
+    shares: 5     # 总碎片数
+
+  # 冷钱包地址（手动配置）
+  addresses:
+    btc: ""  # BTC 冷钱包地址
+    eth: ""  # ETH 冷钱包地址
+
+# ============================================
+# 热钱包配置
+# ============================================
+hot_wallet:
+  # 热钱包私钥（仅开发环境，生产环境请使用 HSM）
+  private_keys:
+    btc: ""  # BTC 热钱包私钥 (WIF 格式)
+    eth: ""  # ETH 热钱包私钥 (0x 开头的十六进制)
+
+  # 归档阈值
+  archive_threshold:
+    btc: 100000000  # 1 BTC (satoshis)
+    eth: 1000000000000000000  # 1 ETH (wei)
+
+  # 最小保留余额
+  min_balance:
+    btc: 10000000  # 0.1 BTC
+    eth: 10000000000000000  # 0.01 ETH
+
+# ============================================
+# 充值配置
+# ============================================
+deposit:
+  # 默认确认数
+  confirmations:
+    btc: 6
+    eth: 12
+    tron: 19
+    sol: 32
+
+  # 批量查询大小
+  batch_size: 100
+
+  # 监听间隔
+  check_interval: 10s
+
+# ============================================
+# 提现配置
+# ============================================
+withdraw:
+  # 最小/最大提现金额
+  limits:
+    btc:
+      min: 1000  # 0.00001 BTC (satoshis)
+      max: 10000000000  # 100 BTC
+    eth:
+      min: 1000000000000000  # 0.001 ETH (wei)
+      max: 10000000000000000000000  # 10000 ETH
+
+  # 每日提现次数限制
+  daily_limit: 10
+
+  # 手续费配置
+  fees:
+    btc: 1000  # satoshis per byte
+    eth:
+      gas_limit: 21000
+      gas_price: "auto"  # auto 或固定值 (wei)
+
+  # 提现审批阈值
+  approval_threshold:
+    small: 0.01  # BTC
+    medium: 1.0  # BTC
+    large: 10.0  # BTC
+
+  # 审批超时时间
+  approval_timeout: 24h
+
+# ============================================
+# 多签配置
+# ============================================
+multisig:
+  enabled: false
+  k: 3  # 需要的签名数
+  n: 5  # 总签名者数
+  signers:
+    # 公钥列表
+    - ""
+
+# ============================================
+# 对账配置
+# ============================================
+reconciliation:
+  # 对账时间 (cron 格式)
+  schedule: "0 2 * * *"  # 每天凌晨 2 点
+
+  # 全量对账
+  full_check_enabled: true
+
+  # 增量对账间隔
+  incremental_interval: 1h
+
+# ============================================
+# 日志配置
+# ============================================
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # json, text
+  output: "stdout"  # stdout, file
+  file:
+    path: "./logs/wallet.log"
+    max_size: 100  # MB
+    max_backups: 10
+    max_age: 30  # days
+    compress: true
+
+# ============================================
+# 监控配置
+# ============================================
+monitoring:
+  # 健康检查
+  health_check:
+    enabled: true
+    interval: 30s
+
+  # 链状态监控
+  chain_monitor:
+    enabled: true
+    interval: 30s
+    lag_threshold: 60  # 秒
+
+  # 链节点切换阈值
+  failover_threshold: 3
+
+# ============================================
+# 安全配置
+# ============================================
+security:
+  # JWT 配置
+  jwt:
+    secret: ""  # 请填写 JWT 密钥
+    expiry: 24h
+
+  # API 密钥
+  api_key:
+    enabled: false
+    keys:
+      - ""
+
+  # IP 白名单
+  ip_whitelist:
+    enabled: false
+    allowed_ips:
+      - "127.0.0.1"
+
+  # 限流配置
+  rate_limit:
+    enabled: true
+    requests_per_minute: 100
+    burst: 10
+
+# ============================================
+# 测试配置
+# ============================================
+test:
+  # 是否使用测试网络
+  testnet: false
+
+  # 测试用户
+  test_users:
+    - user_id: "test_user_1"
+      chain: "BTC"
+      address: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+    - user_id: "test_user_1"
+      chain: "ETH"
+      address: "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb"
