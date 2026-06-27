@@ -8,6 +8,7 @@ import (
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
 	"crypto-bridge/internal/models"
 )
@@ -124,17 +125,25 @@ func (s *DepositService) updateDepositConfirmations(ctx context.Context, deposit
 		"updated_at":    time.Now().Unix(),
 	}
 
+	// Determine if we need to process balance update
+	shouldProcessBalance := false
+
 	// Update status based on confirmations
 	if confirmations >= deposit.RequiredConfirmations && deposit.Status != models.DepositStatusCompleted {
+		if deposit.Status == models.DepositStatusPending {
+			// Transition from pending to confirmed - need to process balance
+			shouldProcessBalance = true
+		}
 		updates["status"] = models.DepositStatusConfirmed
 	}
 
+	// Apply updates to database
 	if err := s.db.Model(deposit).Updates(updates).Error; err != nil {
 		return fmt.Errorf("failed to update deposit: %w", err)
 	}
 
-	// If newly confirmed, process balance update
-	if updates["status"] == models.DepositStatusConfirmed && deposit.Status == models.DepositStatusPending {
+	// Process balance if transitioning to confirmed
+	if shouldProcessBalance {
 		deposit.Status = models.DepositStatusConfirmed
 		if err := s.processConfirmedDeposit(ctx, deposit); err != nil {
 			return err
@@ -153,9 +162,9 @@ func (s *DepositService) processConfirmedDeposit(ctx context.Context, deposit *m
 
 	// Start transaction
 	return s.db.Transaction(func(tx *gorm.DB) error {
-		// Get or create user balance
+		// Get or create user balance with row lock to prevent concurrent updates
 		var balance models.UserBalance
-		if err := tx.Where("user_id = ? AND chain = ?", deposit.UserID, deposit.Chain).
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("user_id = ? AND chain = ?", deposit.UserID, deposit.Chain).
 			First(&balance).Error; err != nil {
 
 			if err == gorm.ErrRecordNotFound {

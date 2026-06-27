@@ -14,7 +14,8 @@ CREATE TABLE IF NOT EXISTS user_addresses (
     status VARCHAR(16) NOT NULL DEFAULT 'active',
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,
-    CONSTRAINT uq_user_address UNIQUE (user_id, chain, address_type)
+    CONSTRAINT uq_user_address UNIQUE (user_id, chain, address_type),
+    CONSTRAINT uq_address UNIQUE (address)
 );
 
 CREATE INDEX IF NOT EXISTS idx_user_addresses_user_id ON user_addresses(user_id);
@@ -42,8 +43,11 @@ CREATE TABLE IF NOT EXISTS deposits (
     required_confirmations INTEGER NOT NULL,
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,
-    completed_at BIGINT
+    completed_at BIGINT,
+    CONSTRAINT uq_deposit_tx UNIQUE (chain, tx_hash)
 );
+
+CREATE INDEX IF NOT EXISTS idx_deposits_user_id ON deposits(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_deposits_user_id ON deposits(user_id);
 CREATE INDEX IF NOT EXISTS idx_deposits_tx_hash ON deposits(tx_hash);
@@ -74,8 +78,11 @@ CREATE TABLE IF NOT EXISTS withdrawals (
     created_at BIGINT NOT NULL,
     updated_at BIGINT NOT NULL,
     approved_at BIGINT,
-    completed_at BIGINT
+    completed_at BIGINT,
+    CONSTRAINT uq_withdraw_tx UNIQUE (chain, tx_hash)
 );
+
+CREATE INDEX IF NOT EXISTS idx_withdrawals_user_id ON withdrawals(user_id);
 
 CREATE INDEX IF NOT EXISTS idx_withdrawals_user_id ON withdrawals(user_id);
 CREATE INDEX IF NOT EXISTS idx_withdrawals_status ON withdrawals(status);
