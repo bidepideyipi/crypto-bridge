@@ -15,8 +15,7 @@ Crypto Bridge - Multi-Chain Wallet System
 
   - Language: Go 1.18+
   - Blockchain: btcd (BTC), go-ethereum (ETH)
-  - Database: PostgreSQL (primary) + Redis (cache)
-  - Message Queue: RocketMQ
+  - Database: PostgreSQL (primary)
   - Architecture: Layered service design with clear separation of concerns
 
   Development Roadmap

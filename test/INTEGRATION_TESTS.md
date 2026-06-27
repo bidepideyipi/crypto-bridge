@@ -13,30 +13,12 @@
 - ✅ IT-004: 并发写入测试
 - ✅ IT-005: 唯一约束测试
 
-### 2. Redis 集成测试 (`test/integration/redis_test.go`)
-- ✅ IT-101: 余额缓存读写测试
-- ✅ IT-102: 缓存过期测试
-- ✅ IT-103: 充值去重测试
-- ✅ IT-104: 分布式锁测试
-- ✅ IT-105: 限流计数测试
-- ✅ 滑动窗口限流测试
-
-### 3. RocketMQ 集成测试 (`test/integration/mq_test.go`)
-- ✅ IT-201: 充值事件发送测试
-- ✅ IT-202: 提现事件发送测试
-- ✅ IT-203: 消息格式测试
-- ✅ IT-204: 消息 Tag 测试
-- ✅ IT-205: 消息 Keys 测试（幂等性）
-- ✅ 生产者关闭测试
-
-### 4. 链节点集成测试 (`test/integration/chain_test.go`)
+### 2. 链节点集成测试 (`test/integration/chain_test.go`)
 - ✅ IT-301: 节点连接测试
 - ✅ IT-302: 获取区块高度测试
 - ✅ IT-303: 查询地址余额测试
 - ✅ IT-304: 查询交易测试
 - ✅ IT-305: 广播交易测试
-- ✅ 地址交易获取测试
-- ✅ 内存池交易测试
 
 ## 已添加的依赖
 
@@ -44,12 +26,6 @@
 // 测试框架
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/suite
-
-// Redis 客户端
-github.com/redis/go-redis/v9
-
-// RocketMQ 客户端
-github.com/apache/rocketmq-client-go/v2
 ```
 
 ## 测试环境配置
@@ -57,8 +33,6 @@ github.com/apache/rocketmq-client-go/v2
 ### Docker Compose 配置
 创建了 `test/docker-compose.test.yml`，包含：
 - PostgreSQL 14 测试数据库
-- Redis 7 测试实例
-- RocketMQ NameServer 和 Broker
 
 ### 环境变量
 支持以下环境变量配置测试环境：
@@ -66,8 +40,6 @@ github.com/apache/rocketmq-client-go/v2
 | 变量名 | 默认值 | 说明 |
 |--------|--------|------|
 | TEST_DB_HOST | localhost | PostgreSQL 主机 |
-| TEST_REDIS_HOST | localhost | Redis 主机 |
-| TEST_ROCKETMQ_ADDR | 127.0.0.1:9876 | RocketMQ 地址 |
 | TEST_NET_MODE | testnet | 区块链网络模式 |
 
 ## 运行测试
@@ -85,7 +57,6 @@ go test -v -tags=integration ./test/integration/...
 
 # 运行单个测试套件
 go test -v -tags=integration ./test/integration/database_test.go
-go test -v -tags=integration ./test/integration/redis_test.go
 go test -v -tags=integration ./test/integration/mq_test.go
 go test -v -tags=integration ./test/integration/chain_test.go
 ```

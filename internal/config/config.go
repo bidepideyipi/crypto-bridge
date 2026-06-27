@@ -13,8 +13,6 @@ import (
 type Config struct {
 	Server     ServerConfig              `yaml:"server"`
 	Database   DatabaseConfig            `yaml:"database"`
-	Redis      RedisConfig               `yaml:"redis"`
-	RocketMQ   RocketMQConfig            `yaml:"rocketmq"`
 	Blockchain BlockchainConfig          `yaml:"blockchain"`
 	HotWallet  HotWalletConfig           `yaml:"hot_wallet"`
 	ColdWallet ColdWalletConfig          `yaml:"cold_wallet"`
@@ -55,25 +53,6 @@ type PostgresConfig struct {
 	MaxIdleConns      int           `yaml:"max_idle_conns"`
 	ConnMaxLifetime   time.Duration `yaml:"conn_max_lifetime"`
 	ConnMaxIdleTime   time.Duration `yaml:"conn_max_idle_time"`
-}
-
-// RedisConfig holds Redis configuration
-type RedisConfig struct {
-	Host         string `yaml:"host"`
-	Port         int    `yaml:"port"`
-	Password     string `yaml:"password"`
-	Database     int    `yaml:"database"`
-	PoolSize     int    `yaml:"pool_size"`
-	MinIdleConns int    `yaml:"min_idle_conns"`
-}
-
-// RocketMQConfig holds RocketMQ configuration
-type RocketMQConfig struct {
-	NameSrvAddr      string            `yaml:"name_srv_addr"`
-	GroupName        string            `yaml:"group_name"`
-	ConsumeTimeout   time.Duration     `yaml:"consume_timeout"`
-	RetryTimes       int               `yaml:"retry_times"`
-	Topics           map[string]string `yaml:"topics"`
 }
 
 // BlockchainConfig holds blockchain configuration
