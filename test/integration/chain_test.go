@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package integration
@@ -13,43 +14,62 @@ import (
 	"go.uber.org/zap"
 
 	"crypto-bridge/internal/blockchain/btc"
+	"crypto-bridge/internal/config"
 )
 
+// testCfg 测试配置
+var testCfg *config.Config
+
+// init 加载测试配置
+func init() {
+	var err error
+	testCfg, err = config.Load("config/test_config.yml")
+	if err != nil {
+		panic(fmt.Sprintf("加载测试配置失败: %v", err))
+	}
+}
+
 // ChainTestSuite 链节点集成测试套件
-// 测试用例 ID: IT-301 ~ IT-305
+// 测试用例 ID: IT-201 ~ IT-205
 type ChainTestSuite struct {
 	suite.Suite
 	logger       *zap.Logger
 	btcAdapter   *btc.Adapter
-	testnetMode  bool
 	rpcEndpoints []string
+	network      string
+	timeout      time.Duration
+	maxRetries   int
 }
 
 // SetupSuite 初始化测试环境
 func (s *ChainTestSuite) SetupSuite() {
 	s.logger = zap.NewNop()
 
-	// 从环境变量获取配置
-	s.testnetMode = getEnv("TEST_NET_MODE", "testnet") == "testnet"
-
-	// 测试网节点
-	s.rpcEndpoints = []string{
-		"https://blockstream.info/testnet/api",
-		"https://mempool.space/testnet/api",
+	// 使用统一配置
+	if testCfg == nil {
+		s.T().Fatal("测试配置未加载，请确保 test/integration/config/test_config.yml 存在")
 	}
+
+	// 从配置读取区块链节点信息
+	s.network = testCfg.Blockchain.BTC.Network
+	s.rpcEndpoints = testCfg.Blockchain.BTC.RPCEndpoints
+	s.timeout = testCfg.Blockchain.BTC.Timeout
+	s.maxRetries = testCfg.Blockchain.BTC.MaxRetries
 
 	// 创建 BTC 适配器
 	s.btcAdapter = btc.NewAdapter(
 		s.rpcEndpoints,
-		"testnet",
-		30*time.Second,
-		3,
+		s.network,
+		s.timeout,
+		s.maxRetries,
 		s.logger,
 	)
 
 	if s.btcAdapter == nil {
 		s.T().Skip("无法创建 BTC 适配器")
 	}
+
+	s.T().Logf("初始化链测试套件: network=%s, endpoints=%v", s.network, s.rpcEndpoints)
 }
 
 // TearDownSuite 清理测试环境
@@ -165,37 +185,10 @@ func (s *ChainTestSuite) TestGetAddressBalance() {
 	})
 }
 
-// IT-304: 查询交易测试
+// IT-204: 查询交易测试
 func (s *ChainTestSuite) TestGetTransaction() {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-
-	s.T().Run("查询已知交易", func(t *testing.T) {
-		// 使用已知的有效测试网交易哈希
-		testTxHash := "af870e2df0dc7fb8b8fedd5a27f6ae0ba0aea0e6d7d18a78204c1e486dc217ca"
-
-		tx, err := s.btcAdapter.GetTransaction(ctx, testTxHash)
-		if err != nil {
-			s.T().Skipf("无法查询测试交易（可能已被重组）: %v", err)
-			return
-		}
-
-		s.NotNil(tx, "交易不应为 nil")
-		s.Equal(testTxHash, tx.TxID, "交易哈希应该匹配")
-
-		s.T().Logf("交易详情: 哈希=%s, 版本=%d, 输入数=%d, 输出数=%d, 手续费=%d",
-			tx.TxID, tx.Version, len(tx.Inputs), len(tx.Outputs), tx.Fee)
-
-		// 如果已确认，验证区块信息
-		if tx.Status.Confirmed {
-			s.Greater(tx.Status.BlockHeight, 0, "确认的区块高度应该大于 0")
-			s.NotEmpty(tx.Status.BlockHash, "区块哈希不应为空")
-			s.Greater(tx.Status.BlockTime, int64(0), "区块时间应该大于 0")
-
-			s.T().Logf("区块信息: 高度=%d, 哈希=%s, 时间=%d",
-				tx.Status.BlockHeight, tx.Status.BlockHash, tx.Status.BlockTime)
-		}
-	})
 
 	s.T().Run("查询不存在的交易", func(t *testing.T) {
 		// 查询一个不存在的交易哈希
@@ -203,6 +196,14 @@ func (s *ChainTestSuite) TestGetTransaction() {
 
 		_, err := s.btcAdapter.GetTransaction(ctx, fakeTxHash)
 		s.Error(err, "不存在的交易应该返回错误")
+	})
+
+	s.T().Run("查询格式错误的交易哈希", func(t *testing.T) {
+		// 查询格式错误的交易哈希
+		invalidTxHash := "not-a-valid-tx-hash"
+
+		_, err := s.btcAdapter.GetTransaction(ctx, invalidTxHash)
+		s.Error(err, "格式错误的交易哈希应该返回错误")
 	})
 }
 

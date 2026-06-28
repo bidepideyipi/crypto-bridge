@@ -35,12 +35,11 @@ blockchain:
   # Bitcoin 配置
   btc:
     enabled: true
-    network: "mainnet"  # mainnet, testnet
+    network: "testnet"  # mainnet, testnet
     rpc_endpoints:
-      - "https://mempool.space/api"
-      - "https://blockstream.info/api"
-      - "https://blockchair.com/api"
-    websocket_endpoint: "wss://blockstream.info/api"
+      - "https://blockstream.info/testnet/api"
+      - "https://mempool.space/testnet/api"
+    websocket_endpoint: "wss://blockstream.info/testnet/api"
     timeout: 30s
     max_retries: 3
     retry_delay: 1s

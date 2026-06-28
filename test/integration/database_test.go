@@ -21,36 +21,9 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
-	"crypto-bridge/internal/config"
 	"crypto-bridge/internal/models"
 	"crypto-bridge/internal/service"
 )
-
-// 测试配置
-var testCfg *config.Config
-
-// init 加载测试配置
-func init() {
-	// 尝试从多个位置加载测试配置
-	configPaths := []string{
-		"./test/integration/config/test_config.yml",
-		"../../test/integration/config/test_config.yml",
-		"./config/test_config.yml",
-		"../../config/test_config.yml",
-	}
-
-	for _, path := range configPaths {
-		if _, err := os.ReadFile(path); err == nil {
-			if cfg, err := config.Load(path); err == nil {
-				testCfg = cfg
-				return
-			}
-		}
-	}
-
-	// 找不到配置文件，设置 nil 标记
-	testCfg = nil
-}
 
 // DatabaseTestSuite 数据库集成测试套件
 // 测试用例 ID: IT-001 ~ IT-005
