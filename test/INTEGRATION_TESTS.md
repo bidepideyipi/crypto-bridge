@@ -14,11 +14,34 @@
 - ✅ IT-005: 唯一约束测试
 
 ### 2. 链节点集成测试 (`test/integration/chain_test.go`)
-- ✅ IT-301: 节点连接测试
-- ✅ IT-302: 获取区块高度测试
-- ✅ IT-303: 查询地址余额测试
-- ✅ IT-304: 查询交易测试
-- ✅ IT-305: 广播交易测试
+- ✅ IT-201: 节点连接测试
+- ✅ IT-202: 获取区块高度测试
+- ✅ IT-203: 查询地址余额测试
+- ✅ IT-204: 查询交易测试
+- ✅ IT-205: 广播交易测试
+
+### 3. 钱包配置集成测试 (`test/integration/wallet_config_test.go`)
+- ✅ IT-301: 创建钱包配置测试
+- ✅ IT-302: 查询热钱包配置测试
+- ✅ IT-303: 查询冷钱包配置测试
+- ✅ IT-304: 更新钱包状态测试
+- ✅ IT-305: 配置唯一性约束测试
+
+### 4. 归档流程集成测试 (`test/integration/archive_test.go`)
+- ✅ IT-401: 创建归档记录测试
+- ✅ IT-402: 归档状态流转测试
+- ✅ IT-403: 归档余额更新测试
+- ✅ IT-404: 归档策略查询测试
+- ✅ IT-405: 归档阈值触发测试
+
+### 5. 多签审批集成测试 (`test/integration/multisig_test.go`)
+- ✅ IT-501: 创建多签审批测试
+- ✅ IT-502: 提交签名测试
+- ✅ IT-503: 签名数统计测试
+- ✅ IT-504: 达到阈值自动完成测试
+- ✅ IT-505: 审批日志记录测试
+- ✅ IT-506: 审批者验证测试
+- ✅ IT-507: 审批超时处理测试
 
 ## 已添加的依赖
 
@@ -57,8 +80,10 @@ go test -v -tags=integration ./test/integration/...
 
 # 运行单个测试套件
 go test -v -tags=integration ./test/integration/database_test.go
-go test -v -tags=integration ./test/integration/mq_test.go
 go test -v -tags=integration ./test/integration/chain_test.go
+go test -v -tags=integration ./test/integration/wallet_config_test.go
+go test -v -tags=integration ./test/integration/archive_test.go
+go test -v -tags=integration ./test/integration/multisig_test.go
 ```
 
 ## 测试特性
